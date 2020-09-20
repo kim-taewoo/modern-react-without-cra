@@ -20,6 +20,7 @@
     "jest": "^26.4.2",
     "lint-staged": "^10.2.13",
     "prettier": "^2.1.1",
+    "redux-saga-test-plan": "^4.0.0-rc.3",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"
@@ -40,7 +41,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged --allow-empty"
+      "pre-commit": "lint-staged --allow-empty",
+      "pre-push": "jest"
     }
   },
   "lint-staged": {
