@@ -1,88 +1,74 @@
 import * as ActionTypes from '@/data/rootActionTypes';
 import * as actions from '@/data/rootActions';
 import * as services from '@/data/rootServices';
+import * as MESSAGE from '@/constants/MESSAGE';
 import history from '@/utils/history';
-import { all, fork, call, takeLatest, put, select } from 'redux-saga/effects';
+import { all, fork, call, takeLeading, put, select } from 'redux-saga/effects';
 
-function* login({ email, password }) {
-  try {
-    yield put(actions.showLoading());
-    const { token, user } = yield call(services.login, email, password);
-    yield put(actions.setAuth(token, user));
-    yield fork(services.setToken, token);
-    history.replace('/');
-  } catch (e) {
-    console.error(e);
-    alert('로그인하는데 실패했습니다.');
-  } finally {
-    yield put(actions.hideLoading());
-  }
-}
-
-function* logout() {
-  try {
-    yield put(actions.showLoading());
-    yield fork(services.setToken, null);
-    yield put(actions.resetAuth());
-    history.replace('/login');
-  } catch (e) {
-    alert('로그아웃에 실패했습니다.');
-  } finally {
-    yield put(actions.hideLoading());
-  }
-}
-
-function* checkToken() {
+function* autoLogin() {
+  // 자동 로그인은 앱이 시작될 때 한번만 이루어지면 되기 때문에
+  // 특별한 트리거없이 바로 실행되는 형태로 구성한다.
   try {
     yield put(actions.showLoading());
 
-    const {
-      user: { profile },
-    } = yield select();
-
+    const { profile } = yield select((state) => state.user);
     const token = yield call(services.getToken);
 
     if (!profile && token) {
       const { user } = yield call(services.me, token);
       yield put(actions.setAuth(token, user));
     }
-  } catch (e) {
+  } catch {
     yield put(actions.logout());
   } finally {
     yield put(actions.hideLoading());
   }
 }
 
-function* signup({ email, name, file, password }) {
-  try {
-    yield put(actions.showLoading());
-    yield call(services.signup, email, name, file, password);
-    alert('가입이 완료되었습니다!');
-
-    history.replace('/login');
-  } catch (e) {
-    alert('가입하는데 실패했습니다.');
-  } finally {
-    yield put(actions.hideLoading());
-  }
-}
-
 function* watchLogin() {
-  yield takeLatest(ActionTypes.LOGIN, login);
+  // 실수로 더블 클릭을 하더라도 takeLeading 이므로 이후 요청은 무시
+  // takeLeading 은 while (true) { yield take(...) } 와 동일
+  yield takeLeading(ActionTypes.LOGIN, function* ({ email, password, returnUrl }) {
+    try {
+      yield put(actions.showLoading());
+
+      const { token, user } = yield call(services.login, email, password);
+      yield put(actions.setAuth(token, user));
+      yield call(services.setToken, token);
+      yield call(history.replace, returnUrl);
+    } catch {
+      yield call(alert, MESSAGE.LOGIN_FAIL);
+    } finally {
+      yield put(actions.hideLoading());
+    }
+  });
 }
 
 function* watchLogout() {
-  yield takeLatest(ActionTypes.LOGOUT, logout);
-}
-
-function* watchCheckToken() {
-  yield takeLatest(ActionTypes.CHECK_TOKEN, checkToken);
+  yield takeLeading(ActionTypes.LOGOUT, function* () {
+    yield put(actions.resetAuth());
+    yield put(actions.resetPosts());
+    yield call(services.setToken, null);
+    yield call(history.replace, '/login');
+  });
 }
 
 function* watchSignup() {
-  yield takeLatest(ActionTypes.SIGNUP, signup);
+  yield takeLeading(ActionTypes.SIGNUP, function* ({ email, name, file, password }) {
+    try {
+      yield put(actions.showLoading());
+
+      yield call(services.signup, email, name, file, password);
+      yield call(alert, MESSAGE.SIGNUP_SUCCESS);
+      yield call(history.replace, '/login');
+    } catch {
+      yield call(alert, MESSAGE.SIGNUP_FAIL);
+    } finally {
+      yield put(actions.hideLoading());
+    }
+  });
 }
 
 export default function* userSaga() {
-  yield all([fork(watchSignup), fork(watchCheckToken), fork(watchLogout), fork(watchLogin)]);
+  yield all([fork(autoLogin), fork(watchLogin), fork(watchLogout), fork(watchSignup)]);
 }

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import connectStore from '../hocs/connectStore';
+import useQuery from '@/hooks/useQuery';
+import connectStore from '@/hocs/connectStore';
 
 function Login(props) {
   const { user, history, actions } = props;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { returnUrl = '/' } = useQuery();
 
   useEffect(() => {
     if (user.token) {
@@ -19,7 +21,7 @@ function Login(props) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          actions.login(email, password);
+          actions.login(email, password, returnUrl);
         }}>
         <input
           type="email"

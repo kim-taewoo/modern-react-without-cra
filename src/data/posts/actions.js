@@ -53,3 +53,10 @@ export function resetPosts() {
     type: ActionTypes.RESET_POSTS,
   };
 }
+
+export function getUserPosts(userId) {
+  return {
+    type: ActionTypes.GET_USER_POSTS,
+    userId,
+  };
+}

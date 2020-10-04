@@ -1,10 +1,11 @@
 import * as ActionTypes from '@/data/rootActionTypes';
 
-export function login(email, password) {
+export function login(email, password, returnUrl) {
   return {
     type: ActionTypes.LOGIN,
     email,
     password,
+    returnUrl,
   };
 }
 
@@ -14,11 +15,6 @@ export function logout() {
   };
 }
 
-export function checkToken() {
-  return {
-    type: ActionTypes.CHECK_TOKEN,
-  };
-}
 
 export function signup(email, name, file, password) {
   return {

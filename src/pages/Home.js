@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import connectStore from '@/hocs/connectStore';
 import useIntersect from '@/hooks/useIntersect';
 import Post from '@/components/Post';
@@ -6,7 +7,8 @@ import PostForm from '@/components/PostForm';
 import PostLoading from '@/components/PostLoading';
 
 const Home = (props) => {
-  const { posts, comments, user, history, actions} = props;
+  const { posts, comments, user, history, actions } = props;
+  const { userId } = useParams();
   const [node, entry] = useIntersect({ threshold: 0.8 });
   const isEnd = useMemo(() => posts.ids.length < posts.offset, [posts.ids, posts.offset]);
 
@@ -32,14 +34,21 @@ const Home = (props) => {
     } else {
       // 포스트 가져오기
       if (entry.isIntersecting && !isEnd) {
-        actions.getPosts();
+        if (userId) {
+          actions.getUserPosts(userId);
+        } else {
+          actions.getPosts();
+        }
       }
     }
   }, [user.token, entry.isIntersecting]);
 
+  // 다른 사용자로 바뀔 경우 포스트 정보 초기화
+  useEffect(() => void actions.resetPosts(), [userId]);
+
   return (
     <div className="posts container">
-      <PostForm onPostSubmit={actions.writePost} />
+      <PostForm show={!userId} onPostSubmit={actions.writePost} />
       {postList}
       <PostLoading ref={node} isEnd={isEnd} />
       <style jsx>{`

@@ -21,7 +21,7 @@ const App = (props) => {
           <Route path="/login" component={Login} />
           <Route path="/signup" component={Signup} />
           <Route path="/logout" component={Logout} />
-          {/* <Route path="/u/:userId" component={ProfileDetail} /> */}
+          <Route path="/u/:userId" component={Home} />
           <Route path="*" component={NotFound} />
         </Switch>
         <Loading show={props.loading} />

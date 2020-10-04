@@ -25,7 +25,7 @@ export async function fetchPosts(token, offset = 0, limit = 5) {
   return result;
 }
 
-export async function fetchUserPosts(userId, token, offset = 0, limit = 5) {
+export async function fetchUserPosts(token, userId, offset = 0, limit = 5) {
   const headers = {
     Authorization: 'Bearer ' + token,
   };

@@ -3,13 +3,12 @@ import classnames from 'classnames';
 import Datetime from '@/components/Datetime';
 import CommentList from '@/components/CommentList';
 import CommentForm from '@/components/CommentForm';
-import { useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Post = (props) => {
   const { post, comments = [], getComments, onLikePost, onCommentSubmit } = props;
   const { id, createdAt, writer, contents, likes, likesOfMe } = post;
   const likeHandler = useCallback(() => void onLikePost(id), [onLikePost, id]);
-  const history = useHistory();
 
   // 포스트별 코멘트 가져오기
   useEffect(() => void getComments(id), [id]);
@@ -17,9 +16,9 @@ const Post = (props) => {
   return (
     <div className="card">
       <div className="card-body">
-        <a onClick={() => history.push(`u/${writer.id}`)}>
-          <h5 className="card-title">{writer.name}</h5>
-        </a>
+        <h5 className="card-title">
+          <Link to={`u/${writer.id}`}>{writer.name}</Link>
+        </h5>
 
         <h6 className="card-subtitle text-muted">
           <Datetime time={createdAt} />
