@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Router, Route, Switch } from 'react-router-dom';
 import history from '@/utils/history';
 import connectStore from '@/hocs/connectStore';
@@ -8,11 +8,9 @@ import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
 import Logout from '@/pages/Logout';
-import ProfileDetail from '@/pages/ProfileDetail';
 import NotFound from '@/pages/NotFound';
 
 const App = (props) => {
-  useEffect(() => void props.actions.checkToken(), []);
 
   return (
     <>
@@ -23,7 +21,7 @@ const App = (props) => {
           <Route path="/login" component={Login} />
           <Route path="/signup" component={Signup} />
           <Route path="/logout" component={Logout} />
-          <Route path="/u/:userId" component={ProfileDetail} />
+          {/* <Route path="/u/:userId" component={ProfileDetail} /> */}
           <Route path="*" component={NotFound} />
         </Switch>
         <Loading show={props.loading} />

@@ -1,9 +1,9 @@
+export const WRITE_POST = 'WRITE_POST';
+export const LIKE_POST = 'LIKE_POST';
+export const GET_POSTS = 'GET_POSTS';
+export const GET_USER_POSTS = 'GET_USER_POSTS';
 export const PREPEND_POST = 'PREPEND_POST';
 export const APPEND_POSTS = 'APPEND_POSTS';
 export const MODIFY_POST = 'MODIFY_POST';
-export const LIKE_POST = 'LIKE_POST';
-export const GET_POSTS = 'GET_POSTS';
-export const WRITE_POST = 'WRITE_POST';
-export const NO_MORE_POSTS = 'NO_MORE_POSTS';
-export const GET_USER_POSTS = 'GET_USER_POSTS';
 export const RESET_POSTS = 'RESET_POSTS';
+export const SET_OFFSET = 'SET_OFFSET';

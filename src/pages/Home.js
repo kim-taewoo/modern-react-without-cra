@@ -1,11 +1,15 @@
 import React, { useMemo, useEffect } from 'react';
 import connectStore from '@/hocs/connectStore';
+import useIntersect from '@/hooks/useIntersect';
 import Post from '@/components/Post';
 import PostForm from '@/components/PostForm';
 import PostLoading from '@/components/PostLoading';
 
 const Home = (props) => {
-  const { posts, comments, user, history, actions, loading } = props;
+  const { posts, comments, user, history, actions} = props;
+  const [node, entry] = useIntersect({ threshold: 0.8 });
+  const isEnd = useMemo(() => posts.ids.length < posts.offset, [posts.ids, posts.offset]);
+
   const postList = useMemo(
     () =>
       posts.ids.map((id) => (
@@ -24,27 +28,20 @@ const Home = (props) => {
   useEffect(() => {
     if (!user.token) {
       // 토큰이 없으면 로그인 페이지로 이동
-      history.replace('/login');
+      history.replace('/login?returnUrl=' + encodeURIComponent(history.location.pathname));
     } else {
       // 포스트 가져오기
-      actions.resetPosts();
-      actions.getPosts();
+      if (entry.isIntersecting && !isEnd) {
+        actions.getPosts();
+      }
     }
-  }, []);
+  }, [user.token, entry.isIntersecting]);
 
   return (
     <div className="posts container">
       <PostForm onPostSubmit={actions.writePost} />
       {postList}
-      {posts.ids.length && (
-        <PostLoading
-          postsLength={posts.ids.length}
-          onReachPageEnd={actions.getPosts}
-          loading={loading}
-          hasMorePosts={posts.hasMorePosts}
-        />
-      )}
-
+      <PostLoading ref={node} isEnd={isEnd} />
       <style jsx>{`
         .container {
           max-width: 600px;

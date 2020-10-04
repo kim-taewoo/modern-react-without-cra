@@ -7,11 +7,9 @@ export function writePost(contents) {
   };
 }
 
-export function getPosts(offset = 0, limit = 5) {
+export function getPosts() {
   return {
-    type: ActionTypes.GET_POSTS,
-    offset,
-    limit,
+    type: ActionTypes.GET_POSTS
   };
 }
 
@@ -43,18 +41,10 @@ export function modifyPost(post) {
   };
 }
 
-export function noMorePosts() {
+export function setOffset(offset) {
   return {
-    type: ActionTypes.NO_MORE_POSTS,
-  };
-}
-
-export function getUserPosts(userId, offset = 0, limit = 5) {
-  return {
-    type: ActionTypes.GET_USER_POSTS,
-    userId,
+    type: ActionTypes.SET_OFFSET,
     offset,
-    limit,
   };
 }
 

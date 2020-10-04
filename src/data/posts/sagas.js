@@ -1,7 +1,9 @@
+import { all, fork, put, select, call, takeLeading } from 'redux-saga/effects';
+import * as POST from '@/constants/POST';
+import * as MESSAGE from '@/constants/MESSAGE';
 import * as ActionTypes from '@/data/rootActionTypes';
 import * as actions from '@/data/rootActions';
 import * as services from '@/data/rootServices';
-import { select, call, fork, all, put, takeLatest, throttle } from 'redux-saga/effects';
 
 function* writePost({ contents }) {
   try {
@@ -15,32 +17,29 @@ function* writePost({ contents }) {
 
     yield put(actions.prependPost(post));
   } catch {
-    alert('포스트를 작성하는데 실패했습니다.');
+    yield call(alert, MESSAGE.POST_WRITE_FAIL);
   } finally {
     yield put(actions.hideLoading());
   }
 }
 
-function* getPosts({ offset, limit }) {
+function* getPosts() {
   try {
-    yield put(actions.showLoading());
-
     const {
       user: { token },
     } = yield select();
 
-    const { posts } = yield call(services.fetchPosts, token, offset, limit);
-    if (posts.length < limit) {
-      yield put(actions.noMorePosts());
-    }
+    const {
+      posts: { offset },
+    } = yield select();
+
+    const { posts } = yield call(services.fetchPosts, token, offset, POST.LIMIT);
 
     yield put(actions.appendPosts(posts));
+    yield put(actions.setOffset(offset + POST.LIMIT));
   } catch (e) {
-    console.error(e);
-    alert('포스트를 가져오는데 실패했습니다.');
-  } finally {
-    yield put(actions.hideLoading());
-  }
+      yield call(alert, MESSAGE.POST_FETCH_FAIL);
+  } 
 }
 
 function* likePost({ postId }) {
@@ -55,47 +54,38 @@ function* likePost({ postId }) {
 
     yield put(actions.modifyPost(post));
   } catch {
-    alert('포스트에 좋아요를 하는 데 실패했습니다.');
+    yield call(alert, MESSAGE.POST_LIKE_FAIL);
   } finally {
     yield put(actions.hideLoading());
   }
 }
 
-function* getUserPosts({ userId, offset, limit }) {
+function* getUserPosts({ userId }) {
   try {
-    yield put(actions.showLoading());
-    const {
-      user: { token },
-    } = yield select();
-
-    const { posts } = yield call(services.fetchUserPosts, userId, token, offset, limit);
-    if (posts.length < limit) {
-      yield put(actions.noMorePosts());
+      const { token } = yield select((state) => state.user);
+      const { offset } = yield select((state) => state.posts);
+      const { posts } = yield call(services.fetchUserPosts, token, userId, offset, POST.LIMIT);
+      yield put(actions.appendPosts(posts));
+      yield put(actions.setOffset(offset + POST.LIMIT));
+    } catch {
+      yield call(alert, MESSAGE.POST_FETCH_FAIL);
     }
-
-    yield put(actions.appendPosts(posts));
-  } catch (e) {
-    console.error(e);
-    alert('유저 포스트를 가져오는데 실패했습니다.');
-  } finally {
-    yield put(actions.hideLoading());
-  }
 }
 
 function* watchWritePost() {
-  yield takeLatest(ActionTypes.WRITE_POST, writePost);
+  yield takeLeading(ActionTypes.WRITE_POST, writePost);
 }
 
 function* watchGetPosts() {
-  yield throttle(3000, ActionTypes.GET_POSTS, getPosts);
+  yield takeLeading(ActionTypes.GET_POSTS, getPosts);
 }
 
 function* watchLikePost() {
-  yield takeLatest(ActionTypes.LIKE_POST, likePost);
+  yield takeLeading(ActionTypes.LIKE_POST, likePost);
 }
 
 function* watchGetUserPosts() {
-  yield takeLatest(ActionTypes.GET_USER_POSTS, getUserPosts);
+  yield takeLeading(ActionTypes.GET_USER_POSTS, getUserPosts);
 }
 
 export default function* postsSaga() {

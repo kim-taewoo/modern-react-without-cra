@@ -38,7 +38,8 @@ function ids(state = [], action = {}) {
       return [];
 
     case ActionTypes.APPEND_POSTS:
-      return [...state, ...action.posts.map((p) => p.id)];
+      // 중복된 포스트가 존재하지 않도록 필터링하기 위해서 Set 사용
+      return [...new Set([...state, ...action.posts.map((p) => p.id)])];
 
     case ActionTypes.PREPEND_POST:
       return [action.post.id, ...state];
@@ -48,12 +49,14 @@ function ids(state = [], action = {}) {
   }
 }
 
-function hasMorePosts(state = true, action = {}) {
+function offset(state = 0, action = {}) {
   switch (action.type) {
+    case ActionTypes.SET_OFFSET:
+      return action.offset;
+
     case ActionTypes.RESET_POSTS:
-      return true;
-    case ActionTypes.NO_MORE_POSTS:
-      return false;
+      return 0;
+
     default:
       return state;
   }
@@ -62,5 +65,5 @@ function hasMorePosts(state = true, action = {}) {
 export default combineReducers({
   entities,
   ids,
-  hasMorePosts,
+  offset,
 });
